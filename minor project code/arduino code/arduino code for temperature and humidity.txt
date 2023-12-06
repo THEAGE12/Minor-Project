@@ -1,0 +1,51 @@
+#include<DHT.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
+#include <WiFiClient.h>
+
+WiFiClient wifiClient;
+const char *ssid = "AndroidAP0c96"; // replace with your wifi ssid and wpa2 key
+const char *pass = "123456789";
+String URL = "http://192.168.1.6/try/connect.php";
+
+void setup()
+{
+Serial.begin(115200);
+delay(10);
+Serial.println("Connecting to ");
+Serial.println(ssid);
+WiFi.begin(ssid, pass);
+while (WiFi.status() != WL_CONNECTED)
+{
+delay(500);
+Serial.print(".");
+}
+Serial.println("");
+Serial.println("WiFi connected");
+}
+#define DHTPIN 2
+#define DHTTYPE DHT11
+DHT dht(DHTPIN,DHTTYPE);
+void loop()
+{
+float hum=dht.readHumidity();
+float temp=dht.readTemperature();
+
+if(isnan(hum)|| isnan(temp) || hum>100){
+  return;
+}
+
+Serial.print("Temp: ");
+Serial.println(temp);
+Serial.print("Hum: ");
+Serial.println(hum);
+
+delay(500);
+HTTPClient http;
+Serial.println("Waiting...");
+String postData = "temperature=" + String(temp) + "&humidity=" + String(hum); 
+
+http.begin(wifiClient, URL);
+http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+int httpcode = http.POST(postData);
+}

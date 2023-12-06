@@ -1,0 +1,41 @@
+#include<DHT.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
+#include <WiFiClient.h>
+
+int sensorPin=A0;
+int sensorData;
+WiFiClient wifiClient;
+const char *ssid = "AndroidAP0c96"; // replace with your wifi ssid and wpa2 key
+const char *pass = "123456789";
+String URL = "http://192.168.1.6/try/air.php";
+void setup()
+{  
+  Serial.begin(9600);   
+  pinMode(sensorPin,INPUT); 
+
+delay(10);
+Serial.println("Connecting to ");
+Serial.println(ssid);
+WiFi.begin(ssid, pass);
+while (WiFi.status() != WL_CONNECTED)         
+{
+delay(500);
+Serial.print(".");
+}               
+ }
+void loop()
+{
+  sensorData = analogRead(sensorPin);       
+  Serial.print("Air Quality:");
+  Serial.print(sensorData, DEC);               
+  Serial.println(" PPM");
+delay(500);
+HTTPClient http;
+Serial.println("Waiting...");
+String postData = "air=" + String(sensorData); 
+
+http.begin(wifiClient, URL);
+http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+int httpcode = http.POST(postData);                                 
+}
